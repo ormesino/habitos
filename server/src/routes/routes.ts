@@ -54,7 +54,7 @@ export async function routes(app: FastifyInstance) {
         }
       }
     })
-
+    // Testing new user
     return habits
   })
 }
