@@ -3,6 +3,7 @@ import { Plus } from 'phosphor-react'
 
 export function Header() {
   return (
+    //  Criação de um header com a logo e um botão
     <div className='w-full max-w-3xl mx-auto flex items-center justify-between'>
       <img src={logo} alt='Logo Habits' />
       <button
