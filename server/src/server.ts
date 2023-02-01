@@ -1,7 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { routes } from './routes/routes';
-
 //  Arquivo principal onde será feita inicialização do servidor
 
 const app = Fastify();

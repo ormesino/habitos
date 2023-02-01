@@ -1,10 +1,11 @@
 import dayjs from 'dayjs'
 import { prisma } from "../config/prisma"
-import { FastifyInstance } from "fastify"   //  Utilizando a instância do Fastify para inserir na rota
-import { string, z } from 'zod'  //  Para validação das entradas
+import { FastifyInstance } from "fastify"   //  Utilizando a instância do Fastify para inserir nas rotas
+import { z } from 'zod'  //  Para validação das entradas
 
 //  Export da função routes() para ser usada no arquivo routes.ts quando o servidor for inicializado
 export async function routes(app: FastifyInstance) {
+  //  Criação de hábitos
   app.post('/habits', async (request, response) => {
 
     //  Validação de entrada
@@ -17,7 +18,7 @@ export async function routes(app: FastifyInstance) {
     const date = dayjs().startOf('day').toDate()
 
     //  Criando o hábito
-    await prisma.habit.create({
+    const habit = await prisma.habit.create({
       data: {
         title,
         created_at: date,
@@ -31,16 +32,17 @@ export async function routes(app: FastifyInstance) {
       }
     })
 
-    return response.status(500).send('Hábito criado com sucesso!')
+    return response.status(500).send(`Hábito "${habit.title}" criado com sucesso!`)
   })
-
+  
+  //  Listagem de hábitos do dia
   app.get('/dayHabits', async (request) => {
     const paramsValidation = z.object({
       date: z.coerce.date()
     })
-
     const { date } = paramsValidation.parse(request.query)
-    const weekDay = dayjs(date).get('day')
+    
+    const weekDay = dayjs(date).startOf('day').get('day')
 
     const habits = await prisma.habit.findMany({
       where: {
@@ -54,7 +56,25 @@ export async function routes(app: FastifyInstance) {
         }
       }
     })
-    // Testing new user
-    return habits
+
+    const day = await prisma.day.findUnique({
+      where: {
+        date: dayjs(date).startOf('day').toDate()
+      },
+      include: {
+        dayHabits: true
+      }
+    })
+
+    const completedHabits = day?.dayHabits.map(dayHabit => {
+      return dayHabit.habit_id
+    })
+
+    return {
+      habits,
+      completedHabits
+    }
   })
+
+  
 }
