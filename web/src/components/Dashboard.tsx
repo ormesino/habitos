@@ -28,7 +28,11 @@ export function Dashboard() {
       {/* Geração de um grid com os dias passados e os dias que virão */}
       <div className="grid grid-rows-7 grid-flow-col gap-3">
         {datesPassed.map((date) => {
-          return <Day key={date.toString()} />
+          return <Day 
+            key={date.toString()}
+            amount={5}
+            completed={Math.round(Math.random() * 5)}
+          />
         })}
 
         {datesToFill > 0 && Array.from({ length: datesToFill }).map((_, i) => {
