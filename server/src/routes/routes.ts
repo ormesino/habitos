@@ -34,14 +34,14 @@ export async function routes(app: FastifyInstance) {
 
     return response.status(500).send(`Hábito "${habit.title}" criado com sucesso!`)
   })
-  
+
   //  Listagem de hábitos do dia
   app.get('/dayHabits', async (request) => {
     const paramsValidation = z.object({
       date: z.coerce.date()
     })
     const { date } = paramsValidation.parse(request.query)
-    
+
     const weekDay = dayjs(date).startOf('day').get('day')
 
     const habits = await prisma.habit.findMany({
@@ -76,5 +76,114 @@ export async function routes(app: FastifyInstance) {
     }
   })
 
-  
+  //  Selecionar quais hábitos foram ou não completos
+  app.patch('/habits/:id/toggle', async (request, response) => {
+    const paramsValidation = z.object({
+      id: z.string().uuid()
+    })
+
+    const dateValidation = z.object({
+      date: z.coerce.date()
+    })
+
+    const { id } = paramsValidation.parse(request.params)
+    const { date } = dateValidation.parse(request.query)
+
+    let day = await prisma.day.findUnique({
+      where: {
+        date: dayjs(date).startOf('day').toDate()
+      }
+    })
+
+    if (!day) {
+      day = await prisma.day.create({
+        data: {
+          date: dayjs(date).startOf('day').toDate()
+        }
+      })
+    }
+
+    const dayHabit = await prisma.dayHabit.findUnique({
+      where: {
+        day_id_habit_id: {
+          day_id: day.id,
+          habit_id: id
+        }
+      }
+    })
+
+    if (dayHabit) {
+      await prisma.dayHabit.delete({
+        where: {
+          id: dayHabit.id
+        }
+      })
+
+      const dayEmpty = await prisma.dayHabit.findFirst({
+        where: {
+          day_id: day.id
+        }
+      })
+      if (!dayEmpty) {
+        await prisma.day.delete({
+          where: {
+            id: day.id
+          }
+        })
+      }
+
+      return response.status(500).send(`Você errou o hábito? Sem problemas, tente novamente!`)
+    } else {
+      await prisma.dayHabit.create({
+        data: {
+          day_id: day.id,
+          habit_id: id
+        }
+      })
+      return response.status(500).send(`Hábito completo com sucesso!`)
+    }
+  })
+
+  //  Resumo dos dias
+  app.get('/habits/summary', async (request) => {
+    /*
+      Tentando reproduzir o raw SQL usando o Prisma
+
+      const allHabits = await prisma.habitWeekDays.findMany({
+        
+      })
+      const totalDays = await prisma.day.findMany({
+        include: {
+          _count: {
+            select: { dayHabits: true },
+          }
+        }
+    }) */
+
+    //  Por ser uma query bem complexa, optamos por usar o raw SQL
+    const summary = await prisma.$queryRaw`
+      SELECT
+        D.id,
+        D.date,
+        (
+          SELECT
+            cast(count(*) as float)
+          FROM day_habits DH
+          WHERE DH.day_id = D.id
+        ) as completed,
+        (
+          SELECT
+            cast(count(*) as float)
+          FROM habit_week_days HWD
+          JOIN habits H 
+            ON HWD.habit_id = H.id
+          WHERE
+            HWD.week_day = cast(strftime('%w', D.date/1000.0, 'unixepoch') as int)
+            AND H.created_at <= D.date
+        ) as totalHabits
+      FROM days D
+    `
+
+    return summary
+  })
 }
