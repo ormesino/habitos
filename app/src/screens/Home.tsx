@@ -1,4 +1,5 @@
 import { View, Text, ScrollView } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 import { generateRange } from "../utils/rangeBetweenDates";
 
@@ -13,6 +14,8 @@ const minWeeks = 18 * 10 // 18 semanas
 const datesToFill = minWeeks - datesPassed.length
 
 export function Home() {
+  const { navigate } = useNavigation()
+
   return (
     <View className="flex-1 bg-background px-8 pt-16">
       <Header />
@@ -44,7 +47,12 @@ export function Home() {
         >
           {
             datesPassed.map((date) => {
-              return <Day key={date.toISOString()} />
+              return (
+                <Day
+                  onPress={() => navigate('day', { date: date.toISOString() })}
+                  key={date.toISOString()}
+                />
+              )
             })
           }
           {
