@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "migrate": "npx prisma migrate reset -f dev",
+    "migrate": "npx prisma migrate dev",
+    "migrate reset": "npx prisma migrate reset -f dev",
     "db": "npx prisma studio",
     "seed": "tsx prisma/seed.ts"
   },
@@ -14,14 +15,14 @@
   "license": "ISC",
   "dependencies": {
     "@fastify/cors": "^8.2.0",
-    "@prisma/client": "^4.9.0",
+    "@prisma/client": "^4.10.1",
     "dayjs": "^1.11.7",
     "fastify": "^4.11.0",
     "zod": "^3.20.2"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
-    "prisma": "^4.9.0",
+    "prisma": "^4.10.1",
     "tsx": "^3.12.2",
     "typescript": "^4.9.4"
   }
