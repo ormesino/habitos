@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "migrate": "npx prisma migrate dev",
-    "migrate reset": "npx prisma migrate reset -f dev",
-    "db": "npx prisma studio",
-    "seed": "tsx prisma/seed.ts"
+    "reset": "npx prisma db push --force-reset",
+    "seed": "tsx prisma/seed.ts",
+    "studio": "npx prisma studio"
   },
   "keywords": [],
   "author": "",

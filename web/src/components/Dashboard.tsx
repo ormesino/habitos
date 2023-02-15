@@ -1,14 +1,34 @@
+import dayjs from "dayjs"
+
+import { useEffect, useState } from "react"
+
 import { generateRange } from "../utils/rangeBetweenDates"
+import { api } from "../lib/axios"
 import { Day } from "./Day"
 
-const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S',]
+const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
 
 //  Relação de constantes para preencher com dias passados e dias que virão
 const datesPassed = generateRange()
 const minWeeks = 18 * 7 // 18 semanas
 const datesToFill = minWeeks - datesPassed.length
 
+type Summary = {
+  id: string,
+  date: string,
+  totalHabits: number,
+  completed: number
+}[]
+
 export function Dashboard() {
+  const [summary, setSummary] = useState<Summary>([])
+
+  useEffect(() => {
+    api.get('habits/summary').then(response => {
+      setSummary(response.data)
+    })
+  }, [])
+
   return (
     <div className='w-full flex'>
       {/* Geração de um grid com as iniciais dos dias da semana */}
@@ -28,11 +48,18 @@ export function Dashboard() {
       {/* Geração de um grid com os dias passados e os dias que virão */}
       <div className="grid grid-rows-7 grid-flow-col gap-3">
         {datesPassed.map((date) => {
-          return <Day 
-            key={date.toString()}
-            amount={5}
-            completed={Math.round(Math.random() * 5)}
-          />
+          const daysInSummary = summary.find(day => {
+            return dayjs(date).isSame(day.date, 'day')
+          })
+
+          return (
+            <Day
+              key={date.toString()}
+              date={date}
+              amount={daysInSummary?.totalHabits}
+              completed={daysInSummary?.completed}
+            />
+          )
         })}
 
         {datesToFill > 0 && Array.from({ length: datesToFill }).map((_, i) => {
