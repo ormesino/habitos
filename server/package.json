@@ -8,7 +8,7 @@
     "migrate": "npx prisma migrate dev",
     "reset": "npx prisma db push --force-reset",
     "seed": "tsx prisma/seed.ts",
-    "studio": "npx prisma studio"
+    "studio": "npx prisma studio --port 8081"
   },
   "keywords": [],
   "author": "",

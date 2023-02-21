@@ -6,7 +6,7 @@ import { z } from 'zod'  //  Para validação das entradas
 //  Export da função routes() para ser usada no arquivo routes.ts quando o servidor for inicializado
 export async function routes(app: FastifyInstance) {
   //  Criação de hábitos
-  app.post('/habits', async (request, response) => {
+  app.post('/habits', async (request) => {
 
     //  Validação de entrada
     const habitValidation = z.object({
@@ -18,7 +18,7 @@ export async function routes(app: FastifyInstance) {
     const date = dayjs().startOf('day').toDate()
 
     //  Criando o hábito
-    const habit = await prisma.habit.create({
+    await prisma.habit.create({
       data: {
         title,
         created_at: date,
@@ -31,8 +31,6 @@ export async function routes(app: FastifyInstance) {
         }
       }
     })
-
-    return response.status(500).send(`Hábito "${habit.title}" criado com sucesso!`)
   })
 
   //  Listagem de hábitos do dia
@@ -77,7 +75,7 @@ export async function routes(app: FastifyInstance) {
   })
 
   //  Selecionar quais hábitos foram ou não completos
-  app.patch('/habits/:id/toggle', async (request, response) => {
+  app.patch('/habits/:id/toggle', async (request) => {
     const paramsValidation = z.object({
       id: z.string().uuid()
     })
@@ -132,7 +130,6 @@ export async function routes(app: FastifyInstance) {
         })
       }
 
-      return response.status(500).send(`Você errou o hábito? Sem problemas, tente novamente!`)
     } else {
       await prisma.dayHabit.create({
         data: {
@@ -140,7 +137,6 @@ export async function routes(app: FastifyInstance) {
           habit_id: id
         }
       })
-      return response.status(500).send(`Hábito completo com sucesso!`)
     }
   })
 
