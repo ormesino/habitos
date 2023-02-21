@@ -10,6 +10,7 @@ interface DayDetailProps {
   date: string
   amount: number
 }
+
 export function DayDetail({ amount }: DayDetailProps) {
   const { goBack } = useNavigation();
   const route = useRoute();
