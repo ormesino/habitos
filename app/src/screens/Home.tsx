@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import dayjs from "dayjs";
 
 import { api } from "../lib/axios";
@@ -16,7 +16,7 @@ type SummaryProps = {
   id: string;
   date: string;
   completed: number;
-  total: number;
+  totalHabits: number;
 }[]
 
 //  Relação de constantes para preencher com dias passados e dias que virão
@@ -33,7 +33,7 @@ export function Home() {
   async function fetchData() {
     try {
       setLoading(true)
-      const response = await api.get('/habits/summary')
+      const response = await api.get('/summary')
       setSummary(response.data)
     } catch (error) {
       Alert.alert('Network', 'Erro ao buscar dados')
@@ -43,9 +43,10 @@ export function Home() {
     }
   }
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     fetchData()
-  }, [])
+  }, []
+  ))
 
   if (loading) return (<Loading />)
 
@@ -91,7 +92,7 @@ export function Home() {
                     key={date.toISOString()}
                     date={date}
                     amountCompleted={dayWithHabits?.completed}
-                    amountOfHabits={dayWithHabits?.total}
+                    amountOfHabits={dayWithHabits?.totalHabits}
                     onPress={() => navigate('day', { date: date.toISOString() })}
                   />
                 )

@@ -16,7 +16,7 @@ interface DayProps extends TouchableOpacityProps {
 }
 
 export function Day({ amountCompleted = 0, amountOfHabits = 0, date, ...rest }: DayProps) {
-  const progressPercentage = amountCompleted > 0 ? generateProgressPercentage(amountCompleted, amountOfHabits) : 0
+  const progressPercentage = amountOfHabits > 0 ? generateProgressPercentage(amountCompleted, amountOfHabits) : 0
   const today = dayjs().startOf('day').toDate()
   const isCurrentDay = dayjs(date).isSame(today, 'day')
 

@@ -14,7 +14,7 @@ export function Header() {
       <Logo />
       <TouchableOpacity
         activeOpacity={0.6}
-        className="flex-row h-11 px-4 border border-violet-500 items-center rounded-lg"
+        className="flex-row h-11 px-4 border border-violet-500 items-center rounded-lg group active:text-violet-500"
         onPress={() => navigate('new')}
       >
         <Feather
