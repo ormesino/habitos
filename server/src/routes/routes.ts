@@ -1,6 +1,6 @@
-import dayjs from 'dayjs'
 import { prisma } from "../config/prisma"
 import { FastifyInstance } from "fastify"   //  Utilizando a instância do Fastify para inserir nas rotas
+import dayjs from 'dayjs'
 import { z } from 'zod'  //  Para validação das entradas
 
 //  Export da função routes() para ser usada no arquivo routes.ts quando o servidor for inicializado
@@ -66,7 +66,7 @@ export async function routes(app: FastifyInstance) {
 
     const completedHabits = day?.dayHabits.map(dayHabit => {
       return dayHabit.habit_id
-    })
+    }) ?? []
 
     return {
       habits,
@@ -75,17 +75,14 @@ export async function routes(app: FastifyInstance) {
   })
 
   //  Selecionar quais hábitos foram ou não completos
-  app.patch('/habits/:id/toggle', async (request) => {
+  app.patch('/habits/toggle', async (request) => {
+
     const paramsValidation = z.object({
+      date: z.coerce.date(),
       id: z.string().uuid()
     })
 
-    const dateValidation = z.object({
-      date: z.coerce.date()
-    })
-
-    const { id } = paramsValidation.parse(request.params)
-    const { date } = dateValidation.parse(request.query)
+    const { date, id } = paramsValidation.parse(request.body)
 
     let day = await prisma.day.findUnique({
       where: {
@@ -141,45 +138,30 @@ export async function routes(app: FastifyInstance) {
   })
 
   //  Resumo dos dias
-  app.get('/habits/summary', async (request) => {
-    /*
-      Tentando reproduzir o raw SQL usando o Prisma
-
-      const allHabits = await prisma.habitWeekDays.findMany({
-        
-      })
-      const totalDays = await prisma.day.findMany({
-        include: {
-          _count: {
-            select: { dayHabits: true },
-          }
-        }
-    }) */
-
+  app.get('/summary', async () => {
     //  Por ser uma query bem complexa, optamos por usar o raw SQL
     const summary = await prisma.$queryRaw`
-      SELECT
-        D.id,
-        D.date,
-        (
-          SELECT
-            cast(count(*) as float)
-          FROM day_habits DH
-          WHERE DH.day_id = D.id
-        ) as completed,
-        (
-          SELECT
-            cast(count(*) as float)
-          FROM habit_week_days HWD
-          JOIN habits H 
-            ON HWD.habit_id = H.id
-          WHERE
-            HWD.week_day = cast(strftime('%w', D.date/1000.0, 'unixepoch') as int)
-            AND H.created_at <= D.date
-        ) as totalHabits
-      FROM days D
-    `
-
+        SELECT 
+          D.id, 
+          D.date,
+          (
+            SELECT 
+              cast(count(*) as float)
+            FROM day_habits DH
+            WHERE DH.day_id = D.id
+          ) as completed,
+          (
+            SELECT
+              cast(count(*) as float)
+            FROM habit_week_days HDW
+            JOIN habits H
+              ON H.id = HDW.habit_id
+            WHERE
+              HDW.week_day = cast(strftime('%w', D.date/1000.0, 'unixepoch') as int)
+              AND H.created_at <= D.date
+          ) as totalHabits
+        FROM days D
+      `
     return summary
   })
 }
