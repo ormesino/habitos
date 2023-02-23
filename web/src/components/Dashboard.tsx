@@ -1,9 +1,10 @@
 import dayjs from "dayjs"
 
+import { api } from "../lib/axios"
 import { useEffect, useState } from "react"
 
 import { generateRange } from "../utils/rangeBetweenDates"
-import { api } from "../lib/axios"
+
 import { Day } from "./Day"
 
 const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
@@ -22,12 +23,20 @@ type Summary = {
 
 export function Dashboard() {
   const [summary, setSummary] = useState<Summary>([])
+  const [generate, setGenerate] = useState(false)
 
   useEffect(() => {
-    api.get('habits/summary').then(response => {
+    api.get('summary').then(response => {
       setSummary(response.data)
+      setGenerate(true)
     })
   }, [])
+
+  async function refreshDay() {
+    await api.get('summary').then(response => {
+      setSummary(response.data)
+    })
+  }
 
   return (
     <div className='w-full flex'>
@@ -47,7 +56,7 @@ export function Dashboard() {
 
       {/* Geração de um grid com os dias passados e os dias que virão */}
       <div className="grid grid-rows-7 grid-flow-col gap-3">
-        {datesPassed.map((date) => {
+        {generate && datesPassed.map((date) => {
           const daysInSummary = summary.find(day => {
             return dayjs(date).isSame(day.date, 'day')
           })
@@ -56,8 +65,9 @@ export function Dashboard() {
             <Day
               key={date.toString()}
               date={date}
-              amount={daysInSummary?.totalHabits}
-              completed={daysInSummary?.completed}
+              totalHabits={daysInSummary?.totalHabits}
+              defaultCompleted={daysInSummary?.completed}
+              refreshDay={refreshDay}
             />
           )
         })}

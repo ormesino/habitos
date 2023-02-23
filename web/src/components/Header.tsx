@@ -16,9 +16,9 @@ export function Header() {
 
         <Dialog.Trigger
           type='button'
-          className='border border-violet-500 font-semibold rounded-lg px-6 py-4 flex items-center gap-3 hover:border-violet-300'
+          className='border border-violet-500 font-semibold rounded-lg px-6 py-4 flex items-center gap-3 transition-colors hover:border-violet-500 hover:bg-violet-500 group focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-bg'
         >
-          <Plus size={20} className='text-violet-500' />
+          <Plus size={20} className='text-violet-500 group-hover:text-white' />
           Novo Hábito
         </Dialog.Trigger>
 
@@ -29,7 +29,7 @@ export function Header() {
             <Dialog.Title className='text-3xl leading-right font-extrabold'>
               Criar Hábito
             </Dialog.Title>
-            <Dialog.Close className='absolute top-6 right-6 text-zinc-400 hover:text-zinc-200'>
+            <Dialog.Close className='absolute top-6 right-6 text-zinc-400 hover:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-violet-600 rounded-lg'>
               <X size={24} aria-label='Fechar' />
             </Dialog.Close>
 
